@@ -1,66 +1,72 @@
 import axios from 'axios';
+import { authStorage } from './auth-storage';
 
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
-// Create axios instance
+// Create axios instance with security headers
 export const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest', // CSRF protection
   },
+  withCredentials: true, // Include cookies for CSRF tokens
 });
 
-// Request interceptor to add auth token
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    const token = authStorage.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log('API Request:', config.method?.toUpperCase(), config.url, config.data);
+    
+    // Add CSRF token if available
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (csrfToken) {
+      config.headers['X-CSRF-Token'] = csrfToken;
+    }
+    
+    // Remove sensitive data from logs in production
+    if (import.meta.env.MODE !== 'production') {
+      console.log('API Request:', config.method?.toUpperCase(), config.url);
+    }
+    
     return config;
   },
-  (error) => {
-    console.error('Request error:', error);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle token refresh
+// Response interceptor with better error handling
 api.interceptors.response.use(
   (response) => {
-    console.log('API Response:', response.status, response.config.url, response.data);
+    if (import.meta.env.MODE !== 'production') {
+      console.log('API Response:', response.status, response.config.url);
+    }
     return response;
   },
   async (error) => {
-    console.error('API Error:', error.response?.status, error.response?.data);
-    
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
+        const refreshToken = authStorage.getRefreshToken();
         if (refreshToken) {
-          console.log('Attempting token refresh...');
           const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
             refreshToken,
           });
 
           const { accessToken } = response.data.data;
-          localStorage.setItem('accessToken', accessToken);
+          authStorage.setTokens(accessToken, refreshToken);
           
-          // Retry original request
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         }
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
-        // Refresh failed, redirect to login
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+        authStorage.clearTokens();
         window.location.href = '/login';
       }
     }
@@ -164,3 +170,4 @@ export const testConnection = async () => {
     };
   }
 };
+

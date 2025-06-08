@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { User } from '../types/index';
 import { authAPI } from '../lib/api';
+import { authStorage } from '../lib/auth-storage';
 
 interface AuthContextType {
   user: User | null;
@@ -25,16 +26,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const savedUser = localStorage.getItem('user');
+    const token = authStorage.getAccessToken();
+    const savedUser = authStorage.getUser();
 
     if (token && savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Error parsing saved user:', error);
-        localStorage.removeItem('user');
-      }
+      setUser(savedUser);
     }
     setIsLoading(false);
   }, []);
@@ -44,9 +40,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await authAPI.login({ username, password });
       const { user, accessToken, refreshToken } = response.data.data;
 
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-      localStorage.setItem('user', JSON.stringify(user));
+      authStorage.setTokens(accessToken, refreshToken);
+      authStorage.setUser(user);
       
       setUser(user);
     } catch (error: any) {
@@ -56,16 +51,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = authStorage.getRefreshToken();
       if (refreshToken) {
         await authAPI.logout(refreshToken);
       }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      authStorage.clearTokens();
       setUser(null);
     }
   };
