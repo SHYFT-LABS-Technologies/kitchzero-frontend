@@ -40,26 +40,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (token) {
         console.log('🔄 Refreshing user data from server...');
         const response = await authAPI.me();
-        const userData = response.data.data.user;
+        
+        // Handle different possible response structures
+        let userData: User;
+        
+        if (response.data?.user) {
+          // Structure: { data: { user: User } }
+          userData = response.data.user;
+        } else if (response.user) {
+          // Structure: { user: User }
+          userData = response.user;
+        } else if (response.data && !response.data.user) {
+          // Structure: { data: User }
+          userData = response.data as User;
+        } else {
+          // Fallback: treat response as User directly
+          userData = response as User;
+        }
+        
         console.log('✅ Fresh user data received:', userData);
         updateUser(userData);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error refreshing user:', error);
-      authStorage.clearTokens();
-      setUser(null);
+      
+      // If it's a 401 error, clear tokens and redirect to login
+      if (error.response?.status === 401) {
+        console.log('🚨 Authentication expired, clearing session');
+        authStorage.clearTokens();
+        setUser(null);
+        // Only redirect if not already on login page
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      }
     }
   }, [updateUser]);
 
   const login = React.useCallback(async (username: string, password: string) => {
     try {
       const response = await authAPI.login({ username, password });
-      const { user, accessToken, refreshToken } = response.data;
+      
+      // Handle different response structures for login
+      let loginData;
+      if (response.data) {
+        loginData = response.data;
+      } else {
+        loginData = response;
+      }
+      
+      const { user, accessToken, refreshToken } = loginData;
 
       await authStorage.setTokens(accessToken, refreshToken);
       updateUser(user);
       
     } catch (error: any) {
+      console.error('Login error:', error);
       throw new Error(error.response?.data?.message || 'Login failed');
     }
   }, [updateUser]);
@@ -89,7 +125,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log('📱 Loading saved user:', savedUser);
           setUser(savedUser);
           // Refresh user data in background
-          refreshUser();
+          setTimeout(() => {
+            refreshUser().catch(console.error);
+          }, 100);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);

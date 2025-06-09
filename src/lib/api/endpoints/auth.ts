@@ -35,8 +35,25 @@ export class AuthAPI {
   }
 
   async me(): Promise<{ data: { user: User } }> {
-    const response = await this.client.get('/auth/me');
-    return response.data;
+    try {
+      const response = await this.client.get('/auth/me');
+      
+      // Log the actual response structure for debugging
+      console.log('🔍 Auth API /me response:', response.data);
+      
+      // Ensure we return the expected structure
+      if (response.data?.data?.user) {
+        return { data: { user: response.data.data.user } };
+      } else if (response.data?.user) {
+        return { data: { user: response.data.user } };
+      } else {
+        // If the response is the user object directly
+        return { data: { user: response.data } };
+      }
+    } catch (error) {
+      console.error('Auth API /me error:', error);
+      throw error;
+    }
   }
 
   async changePassword(data: ChangePasswordData): Promise<void> {
@@ -45,7 +62,15 @@ export class AuthAPI {
 
   async changeCredentials(data: ChangeCredentialsData): Promise<{ data: { user: User } }> {
     const response = await this.client.post('/auth/change-credentials', data);
-    return response.data;
+    
+    // Ensure consistent response structure
+    if (response.data?.data?.user) {
+      return { data: { user: response.data.data.user } };
+    } else if (response.data?.user) {
+      return { data: { user: response.data.user } };
+    } else {
+      return { data: { user: response.data } };
+    }
   }
 
   async refreshToken(refreshToken: string): Promise<{ data: { accessToken: string } }> {

@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
 interface LayoutProps {
-  children?: React.ReactNode;
+  children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = () => {
+const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -36,7 +35,7 @@ const Layout: React.FC<LayoutProps> = () => {
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">
           <div className="p-6 lg:p-8">
-            <Outlet />
+            {children}
           </div>
         </main>
       </div>

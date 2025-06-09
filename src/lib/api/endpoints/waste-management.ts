@@ -1,5 +1,5 @@
-import axios, { type AxiosInstance } from 'axios';
-import { createAPIClient } from '../client';
+import ApiClient from '../client';
+import type { AxiosInstance } from 'axios';
 
 export interface CreateWasteRecordData {
   tenantId?: string;
@@ -146,7 +146,8 @@ class WasteManagementAPI {
   private client: AxiosInstance;
 
   constructor() {
-    this.client = createAPIClient();
+    // Use the existing ApiClient singleton
+    this.client = ApiClient.getInstance().client;
   }
 
   // ==========================================

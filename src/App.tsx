@@ -9,7 +9,7 @@ import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 
-// Import new pages (we'll create these)
+// Import new pages
 import Users from './pages/Users';
 import Tenants from './pages/Tenants';
 import Branches from './pages/Branches';
