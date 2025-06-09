@@ -11,11 +11,13 @@ import {
   Crown,
   Shield,
   LogOut,
-  Sparkles
+  Sparkles,
+  TrendingDown
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard, current: true },
+  { name: 'Waste Management', href: '/waste-management', icon: TrendingDown },
   { name: 'Users', href: '/users', icon: Users },
   { name: 'Tenants', href: '/tenants', icon: Building2 },
   { name: 'Branches', href: '/branches', icon: GitBranch },

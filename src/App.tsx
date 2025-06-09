@@ -6,6 +6,7 @@ import Layout from './components/Layout/Layout';
 import Login from './pages/Login';
 import ChangeCredentials from './components/ChangeCredentials';
 import Dashboard from './pages/Dashboard';
+import WasteManagement from './pages/WasteManagement';
 import ConnectionTest from './components/ConnectionTest';
 import { useAuth } from './contexts/AuthContext';
 
@@ -148,6 +149,7 @@ function App() {
                 <Route path="tenants" element={<Tenants />} />
                 <Route path="branches" element={<Branches />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="waste-management" element={<WasteManagement />} />
               </Route>
               
               <Route path="*" element={<Navigate to="/" replace />} />
