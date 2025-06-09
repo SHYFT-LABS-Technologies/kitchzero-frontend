@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard';
 // Import new pages
 import Users from './pages/Users';
 import Tenants from './pages/Tenants';
+import TenantManagement from './pages/TenantManagement'; // New tenant management page
 import Branches from './pages/Branches';
 import Settings from './pages/Settings';
 import MasterData from './pages/MasterData';
@@ -42,21 +43,31 @@ const App: React.FC = () => {
                       {/* Main Dashboard */}
                       <Route path="/" element={<Dashboard />} />
                       
-                      {/* Master Data Management */}
-                      <Route path="/master-data" element={<MasterData />} />
-                      
-                      {/* Inventory Management Section */}
+                      {/* Core Business - Waste Management */}
                       <Route path="/inventory" element={<Inventory />} />
                       <Route path="/purchases" element={<Purchases />} />
-                      
-                      {/* Waste Management Section */}
                       <Route path="/waste-tracking" element={<WasteTracking />} />
                       <Route path="/waste-analytics" element={<WasteAnalytics />} />
+                      <Route path="/master-data" element={<MasterData />} />
                       
-                      {/* Administration Section */}
+                      {/* User Management (Tenant-scoped) */}
                       <Route path="/users" element={<Users />} />
-                      <Route path="/tenants" element={<Tenants />} />
                       <Route path="/branches" element={<Branches />} />
+                      
+                      {/* Super Admin Only - Global Tenant Management */}
+                      <Route 
+                        path="/admin/tenants" 
+                        element={
+                          <ProtectedRoute requiredRole={['super_admin']}>
+                            <TenantManagement />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      {/* Legacy tenant page (redirect for now) */}
+                      <Route path="/tenants" element={<Navigate to="/admin/tenants" replace />} />
+                      
+                      {/* Settings */}
                       <Route path="/settings" element={<Settings />} />
                       
                       {/* Fallback route */}
