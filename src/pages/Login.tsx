@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { SecureInput } from '../components/ui/SecureInput';
 import { ChefHat, Eye, EyeOff, Lock, User, ArrowRight, Sparkles, Shield, CheckCircle, Leaf, TrendingDown, Recycle } from 'lucide-react';
 
 const Login: React.FC = () => {
@@ -19,7 +20,7 @@ const Login: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
+
     try {
       await login(username, password);
     } catch (error: any) {
@@ -46,21 +47,21 @@ const Login: React.FC = () => {
           <div className="absolute bottom-20 left-1/3 w-20 h-20 bg-green-400/10 rounded-full blur-lg animate-pulse-slow"></div>
           <div className="absolute top-1/3 right-1/3 w-16 h-16 bg-emerald-300/10 rounded-full blur-md animate-float"></div>
         </div>
-        
+
         {/* Subtle pattern overlay */}
         <div className="absolute inset-0 opacity-5">
           <svg className="w-full h-full" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="leaf-pattern" width="60" height="60" patternUnits="userSpaceOnUse">
-                <circle cx="30" cy="30" r="1" fill="currentColor" opacity="0.3"/>
-                <circle cx="10" cy="10" r="0.5" fill="currentColor" opacity="0.2"/>
-                <circle cx="50" cy="50" r="0.5" fill="currentColor" opacity="0.2"/>
+                <circle cx="30" cy="30" r="1" fill="currentColor" opacity="0.3" />
+                <circle cx="10" cy="10" r="0.5" fill="currentColor" opacity="0.2" />
+                <circle cx="50" cy="50" r="0.5" fill="currentColor" opacity="0.2" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#leaf-pattern)" />
           </svg>
         </div>
-        
+
         <div className="relative z-10 flex flex-col justify-center px-12 py-16 text-white">
           <div className="max-w-md">
             {/* Logo with animation */}
@@ -73,7 +74,7 @@ const Login: React.FC = () => {
                 <p className="text-emerald-200 text-sm">Zero Waste Restaurant Management</p>
               </div>
             </div>
-            
+
             {/* Hero content with staggered animation */}
             <div className="animate-fade-in-up">
               <h2 className="text-4xl font-bold text-white leading-tight mb-6">
@@ -84,10 +85,10 @@ const Login: React.FC = () => {
                 Transform your restaurant into a sustainable, profitable operation with our intelligent waste management platform.
               </p>
             </div>
-            
+
             {/* Features with staggered animations */}
             <div className="space-y-6">
-              <div className="flex items-center space-x-4 animate-slide-in-left" style={{animationDelay: '0.2s'}}>
+              <div className="flex items-center space-x-4 animate-slide-in-left" style={{ animationDelay: '0.2s' }}>
                 <div className="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-emerald-400/30">
                   <TrendingDown className="w-5 h-5 text-emerald-300" />
                 </div>
@@ -96,7 +97,7 @@ const Login: React.FC = () => {
                   <p className="text-emerald-200 text-sm">AI-powered inventory optimization</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4 animate-slide-in-left" style={{animationDelay: '0.4s'}}>
+              <div className="flex items-center space-x-4 animate-slide-in-left" style={{ animationDelay: '0.4s' }}>
                 <div className="w-10 h-10 bg-teal-500/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-teal-400/30">
                   <Recycle className="w-5 h-5 text-teal-300" />
                 </div>
@@ -105,7 +106,7 @@ const Login: React.FC = () => {
                   <p className="text-emerald-200 text-sm">Monitor your environmental impact</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4 animate-slide-in-left" style={{animationDelay: '0.6s'}}>
+              <div className="flex items-center space-x-4 animate-slide-in-left" style={{ animationDelay: '0.6s' }}>
                 <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-green-400/30">
                   <Leaf className="w-5 h-5 text-green-300" />
                 </div>
@@ -155,14 +156,14 @@ const Login: React.FC = () => {
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User className="h-5 w-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors duration-200" />
                 </div>
-                <input
-                  id="username"
+                <SecureInput
                   type="text"
-                  required
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 bg-white placeholder-gray-500 hover:border-emerald-300"
+                  onChange={setUsername}
                   placeholder="Enter your username"
+                  maxLength={50}
+                  className="pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 bg-white placeholder-gray-500 hover:border-emerald-300"
+                  required
                 />
               </div>
             </div>
@@ -176,22 +177,15 @@ const Login: React.FC = () => {
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors duration-200" />
                 </div>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  required
+                <SecureInput
+                  type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 bg-white placeholder-gray-500 hover:border-emerald-300"
+                  onChange={setPassword}
                   placeholder="Enter your password"
+                  maxLength={128}
+                  className="pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200 bg-white placeholder-gray-500 hover:border-emerald-300"
+                  required
                 />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-emerald-600 transition-colors duration-200"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
               </div>
             </div>
 
@@ -216,7 +210,7 @@ const Login: React.FC = () => {
           </form>
 
           {/* Demo credentials with clickable auto-populate */}
-          <div className="mt-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg animate-fade-in" style={{animationDelay: '0.8s'}}>
+          <div className="mt-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg animate-fade-in" style={{ animationDelay: '0.8s' }}>
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-semibold text-gray-900 flex items-center">
                 <div className="w-5 h-5 bg-emerald-100 rounded-full flex items-center justify-center mr-2">
@@ -245,7 +239,7 @@ const Login: React.FC = () => {
           </div>
 
           {/* Footer */}
-          <div className="text-center mt-6 animate-fade-in" style={{animationDelay: '1s'}}>
+          <div className="text-center mt-6 animate-fade-in" style={{ animationDelay: '1s' }}>
             <p className="text-sm text-gray-500">
               © 2025 KitchZero. Building sustainable restaurants worldwide.
             </p>

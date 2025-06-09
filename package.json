@@ -5,9 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build --mode production",
+    "build:analyze": "tsc -b && vite build --mode production && npx vite-bundle-analyzer dist",
+    "preview": "vite preview --port 4173",
+    "preview:prod": "vite build --mode production && vite preview --port 4173",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "type-check": "tsc --noEmit",
+    "security-check": "npm audit && npm run type-check"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.6",

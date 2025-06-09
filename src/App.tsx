@@ -1,14 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout/Layout';
 import Login from './pages/Login';
 import ChangeCredentials from './components/ChangeCredentials';
 import Dashboard from './pages/Dashboard';
 import WasteManagement from './pages/WasteManagement';
 import ConnectionTest from './components/ConnectionTest';
-import { useAuth } from './contexts/AuthContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,7 +44,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
-// Placeholder components for future development
+// Placeholder components
 const Users: React.FC = () => (
   <div className="animate-fade-in">
     <div className="card p-8 text-center">
@@ -115,7 +114,6 @@ const CredentialChangeRequired: React.FC<{ children: React.ReactNode }> = ({ chi
     );
   }
 
-  // Check if user must change password (including default credentials)
   if (user && user.mustChangePassword) {
     return <ChangeCredentials />;
   }
@@ -133,7 +131,6 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/connection-test" element={<ConnectionTest />} />
               
-              {/* Protected routes with layout */}
               <Route
                 path="/"
                 element={

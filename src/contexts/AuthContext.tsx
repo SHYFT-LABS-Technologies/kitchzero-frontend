@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { User } from '../types/index';
 import { authAPI } from '../lib/api';
@@ -27,15 +28,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const updateUser = (userData: User) => {
+  const updateUser = React.useCallback((userData: User) => {
     console.log('🔄 Updating user state:', userData);
     setUser(userData);
     authStorage.setUser(userData);
-  };
+  }, []);
 
-  const refreshUser = async () => {
+  const refreshUser = React.useCallback(async () => {
     try {
-      const token = authStorage.getAccessToken();
+      const token = await authStorage.getAccessToken();
       if (token) {
         console.log('🔄 Refreshing user data from server...');
         const response = await authAPI.me();
@@ -48,37 +49,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       authStorage.clearTokens();
       setUser(null);
     }
-  };
+  }, [updateUser]);
 
-  useEffect(() => {
-    const token = authStorage.getAccessToken();
-    const savedUser = authStorage.getUser();
-
-    if (token && savedUser) {
-      console.log('📱 Loading saved user:', savedUser);
-      setUser(savedUser);
-      // Refresh user data in background
-      refreshUser();
-    }
-    setIsLoading(false);
-  }, []);
-
-  const login = async (username: string, password: string) => {
+  const login = React.useCallback(async (username: string, password: string) => {
     try {
       const response = await authAPI.login({ username, password });
-      const { user, accessToken, refreshToken } = response.data.data;
+      const { user, accessToken, refreshToken } = response.data;
 
-      authStorage.setTokens(accessToken, refreshToken);
+      await authStorage.setTokens(accessToken, refreshToken);
       updateUser(user);
       
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Login failed');
     }
-  };
+  }, [updateUser]);
 
-  const logout = async () => {
+  const logout = React.useCallback(async () => {
     try {
-      const refreshToken = authStorage.getRefreshToken();
+      const refreshToken = await authStorage.getRefreshToken();
       if (refreshToken) {
         await authAPI.logout(refreshToken);
       }
@@ -88,9 +76,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       authStorage.clearTokens();
       setUser(null);
     }
-  };
+  }, []);
 
-  const value = {
+  // Initialize auth state
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const token = await authStorage.getAccessToken();
+        const savedUser = authStorage.getUser();
+
+        if (token && savedUser) {
+          console.log('📱 Loading saved user:', savedUser);
+          setUser(savedUser);
+          // Refresh user data in background
+          refreshUser();
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        authStorage.clearTokens();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+  }, [refreshUser]);
+
+  const value = React.useMemo(() => ({
     user,
     login,
     logout,
@@ -98,7 +110,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     refreshUser,
     isLoading,
     isAuthenticated: !!user,
-  };
+  }), [user, login, logout, updateUser, refreshUser, isLoading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
+// Export for HMR
+if (import.meta.hot) {
+  import.meta.hot.accept();
+}

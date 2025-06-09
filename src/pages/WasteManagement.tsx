@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { wasteManagementAPI } from '../lib/api/waste-management';
+import { wasteManagementAPI } from '../lib/api/endpoints/waste-management';
 import { 
   TrendingDown, 
   AlertTriangle, 
