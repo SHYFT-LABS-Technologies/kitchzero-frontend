@@ -7,6 +7,8 @@ interface AuthContextType {
   user: User | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  updateUser: (userData: User) => void;
+  refreshUser: () => Promise<void>;
   isLoading: boolean;
   isAuthenticated: boolean;
 }
@@ -25,12 +27,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const updateUser = (userData: User) => {
+    console.log('🔄 Updating user state:', userData);
+    setUser(userData);
+    authStorage.setUser(userData);
+  };
+
+  const refreshUser = async () => {
+    try {
+      const token = authStorage.getAccessToken();
+      if (token) {
+        console.log('🔄 Refreshing user data from server...');
+        const response = await authAPI.me();
+        const userData = response.data.data.user;
+        console.log('✅ Fresh user data received:', userData);
+        updateUser(userData);
+      }
+    } catch (error) {
+      console.error('Error refreshing user:', error);
+      authStorage.clearTokens();
+      setUser(null);
+    }
+  };
+
   useEffect(() => {
     const token = authStorage.getAccessToken();
     const savedUser = authStorage.getUser();
 
     if (token && savedUser) {
+      console.log('📱 Loading saved user:', savedUser);
       setUser(savedUser);
+      // Refresh user data in background
+      refreshUser();
     }
     setIsLoading(false);
   }, []);
@@ -41,9 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { user, accessToken, refreshToken } = response.data.data;
 
       authStorage.setTokens(accessToken, refreshToken);
-      authStorage.setUser(user);
+      updateUser(user);
       
-      setUser(user);
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Login failed');
     }
@@ -67,6 +94,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     login,
     logout,
+    updateUser,
+    refreshUser,
     isLoading,
     isAuthenticated: !!user,
   };

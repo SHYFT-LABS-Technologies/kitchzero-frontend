@@ -21,18 +21,18 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     // Add CSRF token if available
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     if (csrfToken) {
       config.headers['X-CSRF-Token'] = csrfToken;
     }
-    
+
     // Remove sensitive data from logs in production
     if (import.meta.env.MODE !== 'production') {
       console.log('API Request:', config.method?.toUpperCase(), config.url);
     }
-    
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -61,7 +61,7 @@ api.interceptors.response.use(
 
           const { accessToken } = response.data.data;
           authStorage.setTokens(accessToken, refreshToken);
-          
+
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         }
@@ -87,6 +87,9 @@ export const authAPI = {
 
   changePassword: (data: { currentPassword: string; newPassword: string }) =>
     api.post('/auth/change-password', data),
+
+  changeCredentials: (data: { currentPassword: string; newUsername: string; newPassword: string }) =>
+    api.post('/auth/change-credentials', data),
 };
 
 export const adminAPI = {
@@ -163,8 +166,8 @@ export const testConnection = async () => {
     return { success: true, data: response.data };
   } catch (error: any) {
     console.error('Backend connection failed:', error);
-    return { 
-      success: false, 
+    return {
+      success: false,
       error: error.message || 'Connection failed',
       details: error.response?.data || error
     };

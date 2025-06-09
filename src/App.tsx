@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout/Layout';
 import Login from './pages/Login';
+import ChangeCredentials from './components/ChangeCredentials';
 import Dashboard from './pages/Dashboard';
 import ConnectionTest from './components/ConnectionTest';
 import { useAuth } from './contexts/AuthContext';
@@ -96,6 +97,31 @@ const Settings: React.FC = () => (
   </div>
 );
 
+const CredentialChangeRequired: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-25">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-purple-600 rounded-2xl shadow-lg mb-4 animate-bounce-subtle">
+            <span className="text-2xl font-bold text-white">K</span>
+          </div>
+          <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if user must change password (including default credentials)
+  if (user && user.mustChangePassword) {
+    return <ChangeCredentials />;
+  }
+
+  return <>{children}</>;
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -111,7 +137,9 @@ function App() {
                 path="/"
                 element={
                   <ProtectedRoute>
-                    <Layout />
+                    <CredentialChangeRequired>
+                      <Layout />
+                    </CredentialChangeRequired>
                   </ProtectedRoute>
                 }
               >
