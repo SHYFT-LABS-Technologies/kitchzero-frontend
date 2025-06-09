@@ -13,7 +13,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
     },
   },
 });
@@ -40,7 +40,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     return <Navigate to="/login" replace />;
   }
 
-  return <Layout>{children}</Layout>;
+  return <>{children}</>;
 };
 
 // Placeholder components for future development
@@ -105,46 +105,23 @@ function App() {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/connection-test" element={<ConnectionTest />} />
+              
+              {/* Protected routes with layout */}
               <Route
                 path="/"
                 element={
                   <ProtectedRoute>
-                    <Dashboard />
+                    <Layout />
                   </ProtectedRoute>
                 }
-              />
-              <Route
-                path="/users"
-                element={
-                  <ProtectedRoute>
-                    <Users />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/tenants"
-                element={
-                  <ProtectedRoute>
-                    <Tenants />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/branches"
-                element={
-                  <ProtectedRoute>
-                    <Branches />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <Settings />
-                  </ProtectedRoute>
-                }
-              />
+              >
+                <Route index element={<Dashboard />} />
+                <Route path="users" element={<Users />} />
+                <Route path="tenants" element={<Tenants />} />
+                <Route path="branches" element={<Branches />} />
+                <Route path="settings" element={<Settings />} />
+              </Route>
+              
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>

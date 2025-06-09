@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext'; // Direct import
 import {
   LayoutDashboard,
   Users,
@@ -24,16 +24,17 @@ const navigation = [
 
 const getRoleIcon = (role: string) => {
   switch (role) {
-    case 'superadmin': return <Crown className="w-3 h-3 text-primary-500" />;
-    case 'admin': return <Shield className="w-3 h-3 text-primary-500" />;
+    case 'super_admin': return <Crown className="w-3 h-3 text-primary-500" />;
+    case 'tenant_admin': return <Shield className="w-3 h-3 text-primary-500" />;
     default: return <ChefHat className="w-3 h-3 text-primary-500" />;
   }
 };
 
 const getRoleLabel = (role: string) => {
   switch (role) {
-    case 'superadmin': return 'Super Admin';
-    case 'admin': return 'Administrator';
+    case 'super_admin': return 'Super Admin';
+    case 'tenant_admin': return 'Tenant Admin';
+    case 'branch_admin': return 'Branch Admin';
     default: return 'User';
   }
 };
@@ -42,8 +43,8 @@ const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
 
   const filteredNavigation = navigation.filter(item => {
-    if (user?.role === 'superadmin') return true;
-    if (user?.role === 'admin') return !['tenants'].includes(item.href.slice(1));
+    if (user?.role === 'super_admin') return true;
+    if (user?.role === 'tenant_admin') return !['tenants'].includes(item.href.slice(1));
     return ['/', '/settings'].includes(item.href);
   });
 
